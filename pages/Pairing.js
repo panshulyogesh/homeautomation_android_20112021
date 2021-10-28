@@ -346,7 +346,7 @@ const Pairing = ({navigation}) => {
         ';' +
         item.location +
         ';' +
-        'fan_1_something' +
+     item.appliance +
         ';' +
         item.model +
         '/' +

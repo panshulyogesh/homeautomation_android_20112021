@@ -132,7 +132,7 @@ const App = () => {
               State TEXT,
               pincode TEXT,
               Street TEXT,
-              Door_Number  TEXT,router_ssid TEXT,router_password TEXT,DAQ_STACTIC_IP TEXT, DAQ_STACTIC_Port TEXT )`,
+              Door_Number  TEXT,router_ssid TEXT,router_password TEXT,DAQ_STACTIC_IP TEXT, DAQ_STACTIC_Port TEXT,lan_ip TEXT )`,
               [],
             );
           }
@@ -190,7 +190,7 @@ const App = () => {
             txn.executeSql(
               `CREATE TABLE IF NOT EXISTS Binding_Reg(location TEXT,
               appliance TEXT, model TEXT,paired_unpaired TEXT,
-              ipaddress TEXT,macid TEXT,portnumber TEXT,wifi_ssid TEXT,wifi_pwd TEXT,device_type TEXT,actions TEXT,
+              ipaddress TEXT,macid TEXT,portnumber TEXT,device_type TEXT,actions TEXT,
               properties TEXT,Control_function TEXT,pin_direction TEXT,Valid_States TEXT,output TEXT,lan TEXT,wan TEXT,
               ACS_controller_model TEXT,ESP_pin TEXT,status TEXT,color TEXT)`,
               [],

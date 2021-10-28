@@ -50,6 +50,7 @@ const OwnerRegistration = ({navigation}) => {
   const [router_password, setrouter_password] = useState('');
   const [DAQ_STACTIC_IP, setDAQ_STACTIC_IP] = useState('');
   const [DAQ_STACTIC_Port, setDAQ_STACTIC_Port] = useState('');
+  const [lan_ip, setlan_ip] = useState('');
 
   async function handleSubmitPress() {
     setModalVisible(!modalVisible);
@@ -67,7 +68,8 @@ const OwnerRegistration = ({navigation}) => {
       !router_ssid ||
       !router_password ||
       !DAQ_STACTIC_IP ||
-      !DAQ_STACTIC_Port
+      !DAQ_STACTIC_Port ||
+      !lan_ip
     ) {
       alert('Please fill all the fields');
       return;
@@ -77,8 +79,8 @@ const OwnerRegistration = ({navigation}) => {
       tx.executeSql(
         `INSERT INTO Owner_Reg ( 
               owner_name, owner_password,MailId,PhoneNumber,Property_name ,Area ,State ,pincode ,Street,Door_Number,
-              router_ssid ,router_password ,DAQ_STACTIC_IP , DAQ_STACTIC_Port)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+              router_ssid ,router_password ,DAQ_STACTIC_IP , DAQ_STACTIC_Port,lan_ip)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         [
           OwnerName.toString().toUpperCase(),
           password.toString().toUpperCase(),
@@ -94,6 +96,7 @@ const OwnerRegistration = ({navigation}) => {
           router_password.toString(),
           DAQ_STACTIC_IP.toString(),
           DAQ_STACTIC_Port.toString(),
+          lan_ip.toString(),
         ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -239,6 +242,15 @@ const OwnerRegistration = ({navigation}) => {
               onChangeText={router_password =>
                 setrouter_password(router_password)
               }
+            />
+          </View>
+          <View style={styles.action}>
+            <TextInput
+              style={styles.textInput}
+              autoCapitalize="none"
+              placeholderTextColor="#05375a"
+              placeholder="lan_ip"
+              onChangeText={lan_ip => setlan_ip(lan_ip)}
             />
           </View>
           <View style={styles.action}>

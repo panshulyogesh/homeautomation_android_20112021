@@ -499,6 +499,28 @@ const FirstPage = ({navigation}) => {
         client.end();
       });
     } else if (mode.toString() == 'LAN') {
+      console.log('entered lan mode');
+      let url =
+        'http://' +
+        owner.lan_ip +
+        ':' +
+        findobj.portnumber +
+        '/$' +
+        setstring +
+        '%';
+      // 'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/SET/PANSHUL;84:0d:8e:1b:cd:20/0-0;GPIO0;%';
+      console.log('url ==> ', url);
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          alert(data);
+        });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
     }
@@ -606,6 +628,28 @@ const FirstPage = ({navigation}) => {
         client.end();
       });
     } else if (mode.toString() == 'LAN') {
+      console.log('entered lan mode');
+      let url =
+        'http://' +
+        owner.lan_ip +
+        ':' +
+        findobj.portnumber +
+        '/$' +
+        getstring +
+        '%';
+      // 'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/SET/PANSHUL;84:0d:8e:1b:cd:20/0-0;GPIO0;%';
+      console.log('url ==> ', url);
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          alert(data);
+        });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
     }
@@ -798,6 +842,28 @@ const FirstPage = ({navigation}) => {
         client.end();
       });
     } else if (mode.toString() == 'LAN') {
+      console.log('entered lan mode');
+      let url =
+        'http://' +
+        owner.lan_ip +
+        ':' +
+        mapped_data[0].portnumber +
+        '/$' +
+        runstr +
+        '%';
+      // 'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/SET/PANSHUL;84:0d:8e:1b:cd:20/0-0;GPIO0;%';
+      console.log('url ==> ', url);
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          alert(data);
+        });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
     }
@@ -847,17 +913,53 @@ const FirstPage = ({navigation}) => {
         client.end();
       });
     } else if (mode.toString() == 'LAN') {
+      console.log('entered lan mode');
+      let url =
+        'http://' +
+        owner.lan_ip +
+        ':' +
+        mapped_data[0].portnumber +
+        '/$' +
+        stopstr +
+        '%';
+      // 'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/SET/PANSHUL;84:0d:8e:1b:cd:20/0-0;GPIO0;%';
+      console.log('url ==> ', url);
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          alert(data);
+        });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
     }
   }
 
- 
-
   if (isEnabled) {
     handlerun();
-  } else {
-    handlestop();
+  }
+  // else {
+  //   handlestop();
+  // }
+
+  function testing() {
+    let url =
+      'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/REGISTER/OwnerName;ACSREACTNATIVE123KEY;fan;havels;Champ!;12345Six!;DAQ_STACTIC_IP;DAQ_STACTIC_Port;192.168.4.1;80;esp-1;1234;7829890730;%';
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    })
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+      });
   }
 
   return (

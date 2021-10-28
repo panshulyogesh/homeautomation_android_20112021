@@ -391,8 +391,8 @@ const Binding = ({navigation}) => {
           location.toString().toUpperCase(),
           appliance.toString().toUpperCase(),
           model.toString(),
-          'unpaired',
-          'grey',
+          'paired',
+          'green',
           selectedmodel.Properties,
           selectedmodel.Control_function,
           selectedmodel.pin_direction,
@@ -588,14 +588,6 @@ const Binding = ({navigation}) => {
       alert('Please enter macid');
       return;
     }
-    if (ssid.length == 0) {
-      alert('Please enter ssid');
-      return;
-    }
-    if (pwd.length == 0) {
-      alert('Please enter pwd');
-      return;
-    }
 
     //console.log(location, appliance, model, ipaddress, portnumber, macid);
 
@@ -636,8 +628,7 @@ const Binding = ({navigation}) => {
               model.toString().toUpperCase(),
               ipaddress,
               portnumber,
-              ssid,
-              pwd,
+
               macid.toUpperCase(),
             );
           } else {
@@ -679,8 +670,6 @@ const Binding = ({navigation}) => {
       selectedmodel.ESP_pin,
       ipaddress,
       portnumber,
-      ssid,
-      pwd,
       macid,
       selectedloc,
       selectedappliance,
@@ -690,8 +679,9 @@ const Binding = ({navigation}) => {
     db.transaction(function (tx) {
       tx.executeSql(
         `UPDATE Binding_Reg SET location=?,appliance=?,model=?,
-        properties=?,Control_function=?,pin_direction=?,Valid_States=?,output=?,ACS_controller_model=?,ESP_pin=?,ipaddress=?,portnumber=?,
-        wifi_ssid=?,wifi_pwd =?,   macid=? 
+        properties=?,Control_function=?,pin_direction=?,Valid_States=?,output=?,ACS_controller_model=?,ESP_pin=?,ipaddress=?,
+        portnumber=?,
+        macid=? 
         where  (location=? and appliance =? and model =?);`,
         [
           location.toString().toUpperCase(),
@@ -706,8 +696,6 @@ const Binding = ({navigation}) => {
           selectedmodel.ESP_pin,
           ipaddress,
           portnumber,
-          ssid,
-          pwd,
           macid,
           selectedloc,
           selectedappliance,
@@ -951,7 +939,7 @@ const Binding = ({navigation}) => {
                 }}
               />
             </View>
-            <Text style={styles.text_footer}> SSID </Text>
+            {/* <Text style={styles.text_footer}> SSID </Text>
             <View style={styles.action}>
               <TextInput
                 style={styles.textInput}
@@ -968,7 +956,7 @@ const Binding = ({navigation}) => {
                 placeholder=" Enter PASSWORD"
                 onChangeText={pwd => setpwd(pwd)}
               />
-            </View>
+            </View> */}
             <Button style={styles.button} onPress={() => handleSubmitPress()}>
               <Text>Save Binding</Text>
             </Button>
