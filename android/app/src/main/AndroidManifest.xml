@@ -6,6 +6,13 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/> 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
       android:name=".MainApplication"
@@ -25,5 +32,22 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+
+       <meta-data
+      android:name="com.supersami.foregroundservice.notification_channel_name"
+      android:value="Sticky Title"
+    />
+    <meta-data
+      android:name="com.supersami.foregroundservice.notification_channel_description"
+      android:value="Sticky Description."
+    />
+    <meta-data
+      android:name="com.supersami.foregroundservice.notification_color"
+      android:resource="@color/blue"
+    />
+    <service android:name="com.supersami.foregroundservice.ForegroundService"></service>
+    <service android:name="com.supersami.foregroundservice.ForegroundServiceTask"></service>
+    <!-- End of content to add -->
+    
     </application>
 </manifest>

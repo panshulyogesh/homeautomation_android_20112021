@@ -385,14 +385,14 @@ const Binding = ({navigation}) => {
       tx.executeSql(
         `INSERT INTO Binding_Reg (location,appliance,model,paired_unpaired,
         color,properties ,Control_function, pin_direction,Valid_States,output,
-        ACS_controller_model,ESP_pin,ipaddress,portnumber,macid,lan ,wan,device_type,actions )
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);  `,
+        ACS_controller_model,ESP_pin,ipaddress,portnumber,macid,lan ,wan,device_type,actions,unit )
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);  `,
         [
           location.toString().toUpperCase(),
           appliance.toString().toUpperCase(),
           model.toString(),
-          'paired',
-          'green',
+          'unpaired',
+          'grey',
           selectedmodel.Properties,
           selectedmodel.Control_function,
           selectedmodel.pin_direction,
@@ -407,6 +407,7 @@ const Binding = ({navigation}) => {
           'grey',
           selectedmodel.device_type,
           selectedmodel.actions,
+          selectedmodel.unit,
         ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -526,7 +527,7 @@ const Binding = ({navigation}) => {
       tx.executeSql(
         `INSERT INTO  models_list (
         Model ,Properties ,Control_function ,pin_direction,
-              Valid_States ,output ,ACS_controller_model ,ESP_pin,device_type,actions) VALUES(?,?,?,?,?,?,?,?,?,?)`,
+              Valid_States ,output ,ACS_controller_model ,ESP_pin,device_type,actions,unit) VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
         [
           info.Model,
           info.Properties,
@@ -538,6 +539,7 @@ const Binding = ({navigation}) => {
           info.ESP_pin,
           info.device_type,
           info.Actions,
+          info.Unit,
         ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -932,7 +934,7 @@ const Binding = ({navigation}) => {
                 placeholderTextColor="#05375a"
                 keyboardType="numeric"
                 placeholder=" Enter Port Number Ex: 60"
-                mask="99"
+                mask="9999"
                 onChangeText={(text, rawText) => {
                   setportnumber(text);
                   // console.log(rawText);

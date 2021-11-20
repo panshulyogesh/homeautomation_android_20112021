@@ -63,6 +63,8 @@ const ModifyOwner = ({navigation}) => {
   const [deviceip, setdeviceip] = useState('');
   const [showmodal, setshowmodal] = useState(false);
   const [macid, setmacid] = useState('');
+  const [runtime, setruntime] = useState('');
+  const [sleeptime, setsleeptime] = useState('');
   const [router_ssid, setrouter_ssid] = useState('');
   const [router_password, setrouter_password] = useState('');
   const [DAQ_STACTIC_IP, setDAQ_STACTIC_IP] = useState('');
@@ -240,6 +242,10 @@ const ModifyOwner = ({navigation}) => {
       ';' +
       PhoneNumber +
       ';' +
+      sleeptime +
+      ';' +
+      runtime +
+      ';' +
       '#';
 
     // String Owner_name;
@@ -260,7 +266,7 @@ const ModifyOwner = ({navigation}) => {
     //! TCP PROTOCOL OVER WIFI
     let client = TcpSocket.createConnection(
       //!   FACTORY DEFAULT
-      {port: 80, host: '192.168.4.1'},
+      {port: 8085, host: '192.168.1.9'},
       () => {
         client.write(ownerpair.toString());
       },
@@ -270,10 +276,24 @@ const ModifyOwner = ({navigation}) => {
     });
     client.on('data', data => {
       console.log('message was received from ESP32 ==>', data.toString());
+      let str = data.toString();
       //ack:fail/success;macid#
+      let data_obtained = '';
+      let add_flag = 0;
 
-      let ack = data
-        .toString()
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] == '%') {
+          add_flag = 0;
+        }
+        if (add_flag == 1) {
+          data_obtained = data_obtained + str[i];
+        }
+        if (str[i] == '$') {
+          add_flag = 1;
+        }
+      }
+      console.log('data_obtained', data_obtained);
+      let ack = data_obtained
         .replace(':', ',')
         .replace(';', ',')
         .replace('#', '')
@@ -329,6 +349,26 @@ const ModifyOwner = ({navigation}) => {
                 setmacid(text);
                 // console.log(rawText);
               }}
+            />
+          </View>
+          <Text style={styles.text_footer}>Enter sleep time </Text>
+          <View style={styles.action}>
+            <TextInput
+              style={styles.textInput}
+              autoCapitalize="none"
+              placeholderTextColor="#05375a"
+              placeholder="sleep time "
+              onChangeText={sleeptime => setsleeptime(sleeptime)}
+            />
+          </View>
+          <Text style={styles.text_footer}>Enter run time </Text>
+          <View style={styles.action}>
+            <TextInput
+              style={styles.textInput}
+              autoCapitalize="none"
+              placeholderTextColor="#05375a"
+              placeholder="run time "
+              onChangeText={runtime => setruntime(runtime)}
             />
           </View>
           <Button style={styles.button} onPress={() => ownerreg()}>

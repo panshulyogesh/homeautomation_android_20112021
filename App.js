@@ -49,6 +49,15 @@ import ModifyOwner from './pages/ModifyOwner';
 import DummyScreen from './pages/DummyScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import ReactNativeForegroundService from '@supersami/rn-foreground-service';
+
+import TcpSocket from 'react-native-tcp-socket';
+
+import {DeviceEventEmitter} from 'react-native';
+
+import SendSMS from 'react-native-sms';
+import SmsAndroid from 'react-native-get-sms-android';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 /////////////////////
@@ -110,8 +119,55 @@ function TabStack() {
   );
 }
 const App = () => {
+  var sms_poll_interval = 10000; // polling for sms in seconds(10secs)
+  const onStart = () => {
+    // Checking if the task i am going to create already exist and running, which means that the foreground is also running.
+    if (ReactNativeForegroundService.is_task_running('taskid')) return;
+    // Creating a task.
+    ReactNativeForegroundService.add_task(() => tcpsocket(), {
+      //delay: 1000000,
+      onLoop: false,
+      taskId: 'taskid',
+      onError: e => console.log(`Error logging:`, e),
+    });
+    // starting  foreground service.
+    return ReactNativeForegroundService.start({
+      id: 144,
+      title: 'DATA LOGGER IS RUNNING ',
+      message: 'you are online!',
+    });
+  };
+
+  const onStop = () => {
+    // Make always sure to remove the task before stoping the service. and instead of re-adding the task you can always update the task.
+    if (ReactNativeForegroundService.is_task_running('taskid')) {
+      ReactNativeForegroundService.remove_task('taskid');
+    }
+    // Stoping Foreground service.
+    return ReactNativeForegroundService.stop();
+  };
+
   //! As soon as application is installed useeffect is called to create database tables
   useEffect(() => {
+    db.transaction(function (txn) {
+      txn.executeSql(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='data_logger'",
+        [],
+        function (tx, res) {
+          if (res.rows.length == 0) {
+            txn.executeSql('DROP TABLE IF EXISTS data_logger', []);
+            txn.executeSql(
+              `CREATE TABLE IF NOT EXISTS data_logger(date_time TEXT, logID TEXT,
+               logType TEXT, project TEXT, location TEXT, position TEXT, longitude TEXT, latitude TEXT, parammOut TEXT,
+                value TEXT, unit TEXT)`,
+              [],
+            );
+            console.log(' created data logger table');
+          }
+        },
+      );
+    });
+
     //!  owner ref table is for registering owner
     db.transaction(function (txn) {
       txn.executeSql(
@@ -132,7 +188,7 @@ const App = () => {
               State TEXT,
               pincode TEXT,
               Street TEXT,
-              Door_Number  TEXT,router_ssid TEXT,router_password TEXT,DAQ_STACTIC_IP TEXT, DAQ_STACTIC_Port TEXT,lan_ip TEXT )`,
+              Door_Number  TEXT,router_ssid TEXT,router_password TEXT,DAQ_STACTIC_IP TEXT, DAQ_STACTIC_Port TEXT,lan_ip TEXT,gatewayphno TEXT )`,
               [],
             );
           }
@@ -192,7 +248,7 @@ const App = () => {
               appliance TEXT, model TEXT,paired_unpaired TEXT,
               ipaddress TEXT,macid TEXT,portnumber TEXT,device_type TEXT,actions TEXT,
               properties TEXT,Control_function TEXT,pin_direction TEXT,Valid_States TEXT,output TEXT,lan TEXT,wan TEXT,
-              ACS_controller_model TEXT,ESP_pin TEXT,status TEXT,color TEXT)`,
+              ACS_controller_model TEXT,ESP_pin TEXT,status TEXT,color TEXT,unit TEXT,driver TEXT)`,
               [],
             );
           }
@@ -210,7 +266,7 @@ const App = () => {
             txn.executeSql('DROP TABLE IF EXISTS models_list', []);
             txn.executeSql(
               `CREATE TABLE IF NOT EXISTS models_list(Model TEXT,device_type TEXT ,Properties TEXT,Control_function TEXT,pin_direction TEXT,
-              Valid_States TEXT,output TEXT,ACS_controller_model TEXT,ESP_pin TEXT,actions TEXT )`,
+              Valid_States TEXT,output TEXT,ACS_controller_model TEXT,ESP_pin TEXT,actions TEXT,Unit TEXT,driver TEXT )`,
               [],
             );
           }
@@ -263,9 +319,229 @@ const App = () => {
         },
       );
     });
+
+    // onStart();
+
+    // let subscription = DeviceEventEmitter.addListener(
+    //   'notificationClickHandle',
+    //   function (e) {
+    //     console.log('Clicked on Foreground Service', e);
+    //   },
+    // );
+    // return function cleanup() {
+    //   subscription.remove();
+    // };
   }, []);
+
   //http://192.168.1.101:8085/26/$NETWORK/LAN;abcdefgh;123456;%
   // http://192.168.1.101:8085/$NETWORK/LAN;abcdefgh;123456;%
+
+  function tcpsocket() {
+    let server = TcpSocket.createServer(function (socket) {
+      socket.on('data', data => {
+        let str = data.toString();
+        //  console.log('data fromm browseer', str);
+
+        let data_obtained = '';
+        let add_flag = 0;
+
+        for (let i = 0; i < str.length; i++) {
+          if (str[i] == '%') {
+            add_flag = 0;
+          }
+          if (add_flag == 1) {
+            data_obtained = data_obtained + str[i];
+          }
+          if (str[i] == '$') {
+            add_flag = 1;
+          }
+        }
+        console.log('data_obtained', data_obtained);
+
+        let arr_split1 = data_obtained.split(';');
+        let arr_split2 = arr_split1[1].split('|');
+        console.log(arr_split1);
+        console.log(arr_split2);
+        storeindb(arr_split1, arr_split2);
+
+        // let s = '';
+        // arr_split1.forEach(element => {
+        //   storeindb(element.split('|'));
+        // });
+      });
+      socket.on('error', error => {
+        console.log('An error ocurred with client socket ', error);
+      });
+
+      socket.on('close', error => {
+        console.log('Closed connection with ', socket.address());
+      });
+    });
+    server.listen({port: 9000, host: '192.168.0.4'}, () =>
+      console.log('server is running on port 9000'),
+    );
+    server.on('error', error => {
+      console.log('An error ocurred with the server', error);
+    });
+
+    server.on('close', () => {
+      console.log('Server closed connection');
+    });
+
+    setInterval(getSMS, sms_poll_interval);
+  }
+
+  function getSMS() {
+    // delay =  get current time - interval
+    //read all msgs which  are recieved greater than delay
+    console.log('READING FOR MESSAGES');
+    let filter = {
+      box: 'inbox', // 'inbox' (default), 'sent', 'draft', 'outbox', 'failed', 'queued', and '' for all
+      // the next 4 filters should NOT be used together, they are OR-ed so pick one
+      read: 0, // 0 for unread SMS, 1 for SMS already read
+      address: '+917829890730', // sender's phone number
+      //body: 'home_automation_command', // content to match
+      // the next 2 filters can be used for pagination
+      indexFrom: 0, // start from index 0
+      maxCount: 10, // count of SMS to return each time
+    };
+    SmsAndroid.list(
+      JSON.stringify(filter),
+      fail => {
+        console.log('Failed with this error: ' + fail);
+      },
+      (count, smsList) => {
+        console.log('Count: ', count);
+        console.log('List: ', smsList);
+        var arr = JSON.parse(smsList);
+
+        arr.forEach(function (object) {
+          console.log('Object: ' + object);
+          console.log('-->' + object.date);
+          console.log('-->' + object.body);
+
+          if (object.address == '+917829890730') {
+            console.log('correct  validation');
+            let url =
+              'http://' +
+              owner.lan_ip +
+              ':' +
+              findobj.portnumber +
+              '/$' +
+              object.body +
+              '%';
+            // 'http://172.16.9.146:8085/$84:0D:8E:1B:CD:20/SET/PANSHUL;84:0d:8e:1b:cd:20/0-0;GPIO0;%';
+            console.log('url ==> ', url);
+            fetch(url, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'text/html',
+              },
+            })
+              .then(response => response.json())
+              .then(data => {
+                console.log(data);
+                let split = data.split(':');
+                //alert(data);
+                SendSMS.send(
+                  {
+                    body: data.toString(),
+                    recipients: [split[3]],
+                    successTypes: ['sent', 'queued'],
+                    allowAndroidSendWithoutReadPermission: true,
+                  },
+                  (completed, cancelled, error) => {
+                    if (completed) {
+                      console.log('SMS Sent Completed');
+                    } else if (cancelled) {
+                      console.log('SMS Sent Cancelled');
+                    } else if (error) {
+                      console.log('Some error occured');
+                    }
+                  },
+                );
+              });
+          }
+          alert('your message with selected id is --->' + object.body);
+        });
+      },
+    );
+  }
+
+  function storeindb(params1, params2) {
+    console.log('--------------------');
+    console.log('macid', params1[0]);
+    console.log('data', params2);
+
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM Binding_Reg where (macid = ?)',
+        [params1[0]],
+        (tx, results) => {
+          // var temp = [];
+          // for (let i = 0; i < results.rows.length; ++i)
+          //   temp.push(results.rows.item(i));
+          console.log('results', results);
+          console.log('len', temp.length);
+          console.log(results.rows.item(0));
+
+          if (results.rows.item(0).pin_direction == 'in') {
+            console.log('DATA TO BE STOREDD');
+            for (let i = 0; i < params2.length - 1; i++) {
+              logdata(results.rows.item(0), params2[i]);
+            }
+          }
+        },
+        (tx, err) => {
+          console.log('err', err);
+        },
+      );
+    });
+  }
+
+  function logdata(params1, params3) {
+    console.log('-------------logdata');
+    console.log(params1);
+    console.log(params3);
+    var today = new Date();
+    var date =
+      today.getFullYear() +
+      '-' +
+      (today.getMonth() + 1) +
+      '-' +
+      today.getDate();
+    var date1 = today.getFullYear() + (today.getMonth() + 1) + today.getDate();
+    var time =
+      today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+    var dateTime = date + ' ' + time;
+    console.log('datetime', dateTime);
+
+    db.transaction(function (tx) {
+      tx.executeSql(
+        `INSERT INTO data_logger (date_time, location, longitude,
+         latitude, value, unit ) SELECT ?,?,?,?,?,?,?,?,?,?,?`,
+        [
+          datetime,
+          'logid',
+          params1.location,
+          'long',
+          'lat',
+          params3,
+          params1.unit,
+        ],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            console.log('success in storing data');
+          } else console.log('failed');
+        },
+        (tx, error) => {
+          console.log('error', error);
+        },
+      );
+    });
+  }
+
   return (
     <NavigationContainer>
       <Image source={require('./logo.png')} />

@@ -346,7 +346,7 @@ const Pairing = ({navigation}) => {
         ';' +
         item.location +
         ';' +
-     item.appliance +
+        item.appliance +
         ';' +
         item.model +
         '/' +
@@ -364,7 +364,7 @@ const Pairing = ({navigation}) => {
       console.log(pairingstring);
 
       let client = TcpSocket.createConnection(
-        {port: 80, host: '192.168.4.1'},
+        {port: 8085, host: '192.168.1.9'},
         () => {
           client.write(pairingstring.toString());
         },
@@ -376,8 +376,25 @@ const Pairing = ({navigation}) => {
         console.log('message was received from ESP32 ==>', data.toString());
         //! ack:success;macid#
         //["ack","success","macid"]
-        let ack = data
-          .toString()
+
+        let str = data.toString();
+        //ack:fail/success;macid#
+        let data_obtained = '';
+        let add_flag = 0;
+
+        for (let i = 0; i < str.length; i++) {
+          if (str[i] == '%') {
+            add_flag = 0;
+          }
+          if (add_flag == 1) {
+            data_obtained = data_obtained + str[i];
+          }
+          if (str[i] == '$') {
+            add_flag = 1;
+          }
+        }
+        console.log('data_obtained', data_obtained);
+        let ack = data_obtained
           .replace(':', ',')
           .replace(';', ',')
           .replace('#', '')

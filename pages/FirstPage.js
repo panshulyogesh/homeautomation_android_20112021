@@ -35,6 +35,15 @@ import TcpSocket from 'react-native-tcp-socket';
 
 import {Picker} from '@react-native-picker/picker';
 
+import SendSMS from 'react-native-sms';
+import SmsAndroid from 'react-native-get-sms-android';
+
+import ReactNativeForegroundService from '@supersami/rn-foreground-service';
+
+import TcpSocket from 'react-native-tcp-socket';
+
+import {DeviceEventEmitter} from 'react-native';
+
 const FirstPage = ({navigation}) => {
   const [selectedloc, setselectedloc] = useState([]);
   const [selectloc, setselectloc] = useState([]);
@@ -381,8 +390,9 @@ const FirstPage = ({navigation}) => {
   async function retrieve() {
     AsyncStorage.setItem('tempo', JSON.stringify([]));
     const read = await AsyncStorage.getItem('pwdstatus');
-    //  console.log('read', read);
+
     if (read != null) {
+      console.log('registered');
       await AsyncStorage.setItem('pwdstatus', JSON.stringify(false));
     }
 
@@ -470,9 +480,20 @@ const FirstPage = ({navigation}) => {
     // console.log('output found===>', findoutput);
     // console.log('ip adresss found===>', findobj.ipaddress);
     // console.log('port  found===>', findobj.portnumber);
-    /// SET/PANSHUL;24:62:AB:F2:8D:5C/0-0;GPIO0;
+    /// 24:62:AB:F2:8D:5C/SET/phno:mode/0-0-0;GPIO0;
+    ////ack from esp===> "ack:success:WiFi.macAddress():phone:mode"
 
-    let setstring = findobj.macid + '/' + 'SET' + '/' + s + '#';
+    let setstring =
+      findobj.macid +
+      '/' +
+      owner.phone_number +
+      ';' +
+      mode.toString() +
+      '/' +
+      'SET' +
+      '/' +
+      s +
+      '#';
     console.log('set string===>', setstring);
 
     if (mode.toString() == 'DIRECT') {
@@ -522,7 +543,27 @@ const FirstPage = ({navigation}) => {
           alert(data);
         });
     } else if (mode.toString() == 'WAN') {
+      ///
     } else if (mode.toString() == 'SMS') {
+      console.log('SMS MODE');
+
+      SendSMS.send(
+        {
+          body: setstring.toString(),
+          recipients: ['7829890730', '8880655639'],
+          successTypes: ['sent', 'queued'],
+          allowAndroidSendWithoutReadPermission: true,
+        },
+        (completed, cancelled, error) => {
+          if (completed) {
+            console.log('SMS Sent Completed');
+          } else if (cancelled) {
+            console.log('SMS Sent Cancelled');
+          } else if (error) {
+            console.log('Some error occured');
+          }
+        },
+      );
     }
 
     // OUTPUT
@@ -652,6 +693,25 @@ const FirstPage = ({navigation}) => {
         });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
+      console.log('SMS MODE');
+
+      SendSMS.send(
+        {
+          body: getstring.toString(),
+          recipients: ['7829890730', '8880655639'],
+          successTypes: ['sent', 'queued'],
+          allowAndroidSendWithoutReadPermission: true,
+        },
+        (completed, cancelled, error) => {
+          if (completed) {
+            console.log('SMS Sent Completed');
+          } else if (cancelled) {
+            console.log('SMS Sent Cancelled');
+          } else if (error) {
+            console.log('Some error occured');
+          }
+        },
+      );
     }
   }
 
@@ -866,6 +926,25 @@ const FirstPage = ({navigation}) => {
         });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
+      console.log('SMS MODE');
+
+      SendSMS.send(
+        {
+          body: runstr.toString(),
+          recipients: ['7829890730', '8880655639'],
+          successTypes: ['sent', 'queued'],
+          allowAndroidSendWithoutReadPermission: true,
+        },
+        (completed, cancelled, error) => {
+          if (completed) {
+            console.log('SMS Sent Completed');
+          } else if (cancelled) {
+            console.log('SMS Sent Cancelled');
+          } else if (error) {
+            console.log('Some error occured');
+          }
+        },
+      );
     }
   }
 
@@ -937,6 +1016,25 @@ const FirstPage = ({navigation}) => {
         });
     } else if (mode.toString() == 'WAN') {
     } else if (mode.toString() == 'SMS') {
+      console.log('SMS MODE');
+
+      SendSMS.send(
+        {
+          body: stopstring.toString(),
+          recipients: ['7829890730', '8880655639'],
+          successTypes: ['sent', 'queued'],
+          allowAndroidSendWithoutReadPermission: true,
+        },
+        (completed, cancelled, error) => {
+          if (completed) {
+            console.log('SMS Sent Completed');
+          } else if (cancelled) {
+            console.log('SMS Sent Cancelled');
+          } else if (error) {
+            console.log('Some error occured');
+          }
+        },
+      );
     }
   }
 
